@@ -10,26 +10,38 @@ function HomePage() {
   const { accessToken, logout } = useAuth();
   const [loading, setLoading] = useState(true);
 
+useEffect(() => {
+  if (!accessToken) return;
 
-  useEffect(() => {
-    if (!accessToken) return;
+  console.log("🎯 Fetching bets with token...");
+  fetch('http://127.0.0.1:8000/api/bets/', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    }
+  })
+    .then(res => {
+      if (res.status === 401) {
+        console.warn("⚠️ Unauthorized – token may have expired.");
 
-    console.log("🎯 Fetching bets with token...");
-    fetch('http://127.0.0.1:8000/api/bets/', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
+        setBets([]); // prevent crashes
+        setLoading(false);
+        return null;
       }
+      return res.json();
     })
-      .then(res => res.json())
-      .then(data => {
+    .then(data => {
+      if (data) {
         setBets(data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('❌ Error fetching bets:', error);
-        setLoading(false);
-      });
-  }, [accessToken]);
+      }
+      setLoading(false);
+    })
+    .catch(error => {
+      console.error('❌ Error fetching bets:', error);
+      setBets([]); // ensure it's an array
+      setLoading(false);
+    });
+}, [accessToken]);
+
 
    return (
     <motion.div
