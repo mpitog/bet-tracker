@@ -11,11 +11,21 @@ class BetSerializer(serializers.ModelSerializer):
     league_display = serializers.SerializerMethodField()
     sport_display = serializers.SerializerMethodField()
     bet_type_display = serializers.SerializerMethodField()
+    payout = serializers.SerializerMethodField()
+    profit = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Bet
         fields = '__all__'
+        read_only_fields = ['payout', 'profit']
 
+    def get_payout(self, obj):
+        return obj.payout
+
+    def get_profit(self, obj):
+        return obj.profit
+    
     def get_status_display(self, obj):
         return obj.get_status_display()
 

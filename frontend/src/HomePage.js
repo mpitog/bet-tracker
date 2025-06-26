@@ -78,8 +78,9 @@ useEffect(() => {
           <th style={styles.thtd}>Bet</th>
           <th style={styles.thtd}>Stake</th>
           <th style={styles.thtd}>Odds</th>
+          <th style={styles.thtd}>Payout</th>
+          <th style={styles.thtd}>Profit</th>
           <th style={styles.thtd}>Status</th>
-          <th style={styles.thtd}>Updated</th>
           <th style={styles.thtd}>Bonus</th>
         </tr>
       </thead>
@@ -105,11 +106,31 @@ useEffect(() => {
           <td style={styles.thtd}>{bet.bet_name || 'N/A'}</td>
           <td style={styles.thtd}>{bet.stake ? `$${parseFloat(bet.stake).toFixed(2)}` : 'N/A'}</td>
           <td style={styles.thtd}>{bet.odds || 'N/A'}</td>
-          <td style={styles.thtd}>
-            <span style={chipStyle}>{bet.status_display || 'N/A'}</span>
+          <td style={styles.thtd}>{bet.payout || 'N/A'}</td>
+          <td
+        style={{
+          ...styles.thtd,
+          color:
+            bet.profit > 0
+          ? '#27ae60'
+          : bet.profit < 0
+          ? '#e74c3c'
+          : undefined,
+          fontWeight: bet.profit !== 0 ? 'bold' : undefined,
+        }}
+          >
+        {bet.profit || 'N/A'}
           </td>
-          <td style={styles.thtd}>{bet.updated_at ? new Date(bet.updated_at).toLocaleDateString() : 'N/A'}</td>
-          <td style={styles.thtd}>{bet.bonus_bet ? 'Yes' : 'No'}</td>
+          <td style={styles.thtd}>
+        <span style={chipStyle}>{bet.status_display || 'N/A'}</span>
+          </td>
+          <td style={styles.thtd}>
+        {bet.bonus_bet ? (
+          <span role="img" aria-label="Yes" style={{ color: '#27ae60', fontSize: '1.2em' }}>✅</span>
+        ) : (
+          <span role="img" aria-label="No" style={{ color: '#e74c3c', fontSize: '1.2em' }}>❌</span>
+        )}
+          </td>
         </tr>
       );
     })}
