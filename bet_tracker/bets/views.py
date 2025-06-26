@@ -21,18 +21,21 @@ class ProtectedView(APIView):
         return Response({"message": "You are authenticated!"})
 
 class BetListView(generics.ListAPIView):
-    queryset = Bet.objects.all()
     serializer_class = BetSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        return Bet.objects.filter(user=self.request.user)
+    
+#class BetViewSet(viewsets.ModelViewSet):
+ #   serializer_class = BetSerializer
+  #  permission_classes = [permissions.IsAuthenticated]
 
-class BetViewSet(viewsets.ModelViewSet):
-    queryset = Bet.objects.all()
-    serializer_class = BetSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+   # def get_queryset(self):
+     #   return Bet.objects.filter(user=self.request.user)
+#
+   # def perform_create(self, serializer):
+      #  serializer.save(user=self.request.user)
 
 class PlayerViewSet(viewsets.ModelViewSet):
     queryset = Player.objects.all()

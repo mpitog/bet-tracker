@@ -68,46 +68,51 @@ useEffect(() => {
     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign:"left", }}>
       <thead>
         <tr>
-          <th>Market</th>
-          <th>Sport</th>
-          <th>League</th>
-          <th>Type</th>
-          <th>Bet</th>
-          <th>Stake</th>
-          <th>Odds</th>
-          <th>Status</th>
-          <th>Created</th>
-          <th>Updated</th>
-          <th>Bonus</th>
+          <th style={styles.thtd}>Created</th>
+          <th style={styles.thtd}>Sportsbook</th>
+          <th style={styles.thtd}>Market</th>
+          <th style={styles.thtd}>Event Name</th>
+          <th style={styles.thtd}>Sport</th>
+          <th style={styles.thtd}>League</th>
+          <th style={styles.thtd}>Type</th>
+          <th style={styles.thtd}>Bet</th>
+          <th style={styles.thtd}>Stake</th>
+          <th style={styles.thtd}>Odds</th>
+          <th style={styles.thtd}>Status</th>
+          <th style={styles.thtd}>Updated</th>
+          <th style={styles.thtd}>Bonus</th>
         </tr>
       </thead>
-      <tbody>
-        {bets.map((bet) => (
-          <tr
-            key={bet.id}
-            style={{ borderBottom: '1px solid #ccc' }}
-          >
-            <td>
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                {bet.market_name || 'N/A'}
-              </motion.div>
-            </td>
-            <td>{bet.sport || 'N/A'}</td>
-            <td>{bet.league || 'N/A'}</td>
-            <td>{bet.bet_type || 'N/A'}</td>
-            <td>{bet.bet_name || 'N/A'}</td>
-            <td>{bet.stake || 'N/A'}</td>
-            <td>{bet.odds || 'N/A'}</td>
-            <td>{bet.status || 'N/A'}</td>
-            <td>{bet.created_at ? new Date(bet.created_at).toLocaleDateString() : 'N/A'}</td>
-            <td>{bet.updated_at ? new Date(bet.updated_at).toLocaleDateString() : 'N/A'}</td>
-            <td>{bet.bonus_bet ? 'Yes' : 'No'}</td>
-          </tr>
-        ))}
+       <tbody>
+    {bets.map((bet) => {
+      const status = bet.status;
+      let chipStyle = { ...styles.chipBase, ...styles.chipDefault };
+
+      if (status === 'won') chipStyle = { ...styles.chipBase, ...styles.chipWon };
+      else if (status === 'half_won') chipStyle = { ...styles.chipBase, ...styles.chipHalfWon };
+      else if (status === 'lost') chipStyle = { ...styles.chipBase, ...styles.chipLost };
+      else if (status === 'half_lost') chipStyle = { ...styles.chipBase, ...styles.chipHalfLost };
+
+      return (
+        <tr key={bet.id}>
+          <td style={styles.thtd}>{bet.created_at ? new Date(bet.created_at).toLocaleDateString() : 'N/A'}</td>
+          <td style={styles.thtd}>{bet.sportsbook_display || 'N/A'}</td>
+          <td style={styles.thtd}>{bet.market_name || 'N/A'}</td>
+          <td style={styles.thtd}>{bet.event_name || 'N/A'}</td>
+          <td style={styles.thtd}>{bet.sport_display || 'N/A'}</td>
+          <td style={styles.thtd}>{bet.league_display || 'N/A'}</td>
+          <td style={styles.thtd}><span className="chip chip-default">{bet.bet_type_display || 'N/A'}</span></td>
+          <td style={styles.thtd}>{bet.bet_name || 'N/A'}</td>
+          <td style={styles.thtd}>{bet.stake ? `$${parseFloat(bet.stake).toFixed(2)}` : 'N/A'}</td>
+          <td style={styles.thtd}>{bet.odds || 'N/A'}</td>
+          <td style={styles.thtd}>
+            <span style={chipStyle}>{bet.status_display || 'N/A'}</span>
+          </td>
+          <td style={styles.thtd}>{bet.updated_at ? new Date(bet.updated_at).toLocaleDateString() : 'N/A'}</td>
+          <td style={styles.thtd}>{bet.bonus_bet ? 'Yes' : 'No'}</td>
+        </tr>
+      );
+    })}
       </tbody>
     </table>
   )}
@@ -136,8 +141,36 @@ const styles = {
     color: 'white',
     border: 'none',
     borderRadius: '4px',
-    cursor: 'pointer'
-  }
+    cursor: 'pointer',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    backgroundColor: '#fafafa',
+    border: '1px solid #ddd',
+    borderRadius: '6px',
+    overflow: 'hidden',
+    fontSize: '0.95rem',
+  },
+  thtd: {
+    padding: '12px 16px',
+    borderBottom: '1px solid #e0e0e0',
+    textAlign: 'left',
+  },
+  chipBase: {
+    display: 'inline-block',
+    padding: '4px 10px',
+    borderRadius: '12px',
+    fontSize: '0.85rem',
+    fontWeight: 500,
+    color: 'white',
+    textTransform: 'capitalize',
+  },
+  chipWon: { backgroundColor: '#27ae60' },
+  chipHalfWon: { backgroundColor: '#27ae60' },
+  chipLost: { backgroundColor: '#e74c3c' },
+  chipHalfLost: { backgroundColor: '#e74c3c' },
+  chipDefault: { backgroundColor: '#7f8c8d' },
 };
 
 

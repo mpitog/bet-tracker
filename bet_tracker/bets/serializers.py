@@ -6,9 +6,31 @@ from django.contrib.auth.password_validation import validate_password
 User = get_user_model()
 
 class BetSerializer(serializers.ModelSerializer):
+    status_display = serializers.SerializerMethodField()
+    sportsbook_display = serializers.SerializerMethodField()
+    league_display = serializers.SerializerMethodField()
+    sport_display = serializers.SerializerMethodField()
+    bet_type_display = serializers.SerializerMethodField()
+
     class Meta:
         model = Bet
         fields = '__all__'
+
+    def get_status_display(self, obj):
+        return obj.get_status_display()
+
+    def get_sportsbook_display(self, obj):
+        return obj.get_sportsbook_display()
+    
+    def get_league_display(self, obj):
+        return obj.get_league_display()
+    
+    def get_sport_display(self, obj):
+        return obj.get_sport_display()
+    
+    def get_bet_type_display(self, obj):
+        return obj.get_bet_type_display()
+
 
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
