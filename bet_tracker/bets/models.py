@@ -277,6 +277,8 @@ class Bet(models.Model):
             return self.stake
         elif self.status == 'pending':
             return Decimal('0.0')
+        elif self.status == 'cashout':
+            return self.cashout_amount if self.cashout_amount is not None else Decimal('0.0')
         else:
             return Decimal('0.0')
 
@@ -284,6 +286,10 @@ class Bet(models.Model):
     def profit(self):
         if self.status == 'pending':
             return str("-")
+        elif self.bonus_bet:
+            return self.payout
+        elif self.status == 'refunded':
+            return Decimal('0.0')
         else:
             return self.payout - self.stake
 

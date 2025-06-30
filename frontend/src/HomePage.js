@@ -145,7 +145,7 @@ const handleSave = () => {
 };
 
 
-  // Add a delete handler
+  // delete handler
   const handleDelete = (betId) => {
     if (!window.confirm('Are you sure you want to delete this bet?')) return;
     fetch(`http://127.0.0.1:8000/api/bets/${betId}/`, {
@@ -163,6 +163,31 @@ const handleSave = () => {
       })
       .catch(err => console.error('Delete error:', err));
   };
+
+  // edit handler
+  const handleEdit = (betId, updatedFields) => {
+    fetch(`http://127.0.0.1:8000/api/bets/${betId}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify(updatedFields)
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to update');
+        }
+        return res.json();
+      })
+      .then(updatedBet => {
+        setBets(prev =>
+          prev.map(bet => (bet.id === betId ? { ...bet, ...updatedBet } : bet))
+        );
+      })
+      .catch(err => console.error('Edit error:', err));
+  };
+
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -220,7 +245,72 @@ const handleSave = () => {
                   <td style={styles.thtd}>{bet.bet_name || 'N/A'}</td>
                   <td style={styles.thtd}>{bet.stake ? `$${parseFloat(bet.stake).toFixed(2)}` : 'N/A'}</td>
                   <td style={styles.thtd}>{bet.odds || 'N/A'}</td>
-                  <td style={styles.thtd}>{bet.status_display || 'N/A'}</td>
+                  <td style={{ ...styles.thtd, position: 'relative' }}>
+                    {bet.editingStatus ? (
+                      <select
+                        value={bet.status}
+                        onChange={e => {
+                          const newStatus = e.target.value;
+                          handleEdit(bet.id, { status: newStatus });
+                          setBets(prev =>
+                            prev.map(b =>
+                              b.id === bet.id ? { ...b, status: newStatus, editingStatus: false } : b
+                            )
+                          );
+                        }}
+                        onBlur={() =>
+                          setBets(prev =>
+                            prev.map(b =>
+                              b.id === bet.id ? { ...b, editingStatus: false } : b
+                            )
+                          )
+                        }
+                        autoFocus
+                        style={{
+                          fontSize: '0.95rem',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          border: '1px solid #bfc9d9',
+                          background: '#f8fafc',
+                          marginRight: '4px',
+                          minWidth: '80px'
+                        }}
+                      >
+                        {STATUSES.map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span>
+                        {bet.status_display || 'N/A'}
+                        <button
+                          className="edit-pencil"
+                          title="Edit Status"
+                          onClick={() =>
+                            setBets(prev =>
+                              prev.map(b =>
+                                b.id === bet.id ? { ...b, editingStatus: true } : b
+                              )
+                            )
+                          }
+                          style={{
+                            display: 'inline-block',
+                            marginLeft: '6px',
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#000',
+                            padding: 0,
+                            verticalAlign: 'middle',
+                          }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M14.85 2.85a1.2 1.2 0 0 1 1.7 1.7l-1.1 1.1-1.7-1.7 1.1-1.1zm-2.1 2.1 1.7 1.7-8.2 8.2c-.1.1-.2.2-.3.3l-2.1.6c-.3.1-.6-.2-.5-.5l.6-2.1c.1-.1.2-.2.3-.3l8.2-8.2z" />
+                          </svg>
+                        </button>
+                      </span>
+                    )}
+                  </td>
                   <td style={styles.thtd}>{bet.payout ? `$${parseFloat(bet.payout).toFixed(2)}` : 'N/A'}</td>
                   <td
                     style={{
@@ -240,6 +330,9 @@ const handleSave = () => {
                   </td>
                   <td style={styles.thtd}>{bet.bonus_bet ? '✅' : '❌'}</td>
                   <td style={{ ...styles.thtd, width: '32px', position: 'relative', padding: 0 }}>
+                    
+                    
+                    {/* Delete X icon */}
                     <button
                       className="delete-x"
                       title="Delete"
@@ -281,11 +374,15 @@ const handleSave = () => {
         {/* Inline CSS for hover effect */}
         <style>
           {`
-            .bet-row:hover .delete-x {
+            .bet-row:hover .delete-x,
+            .bet-row:hover .edit-pencil {
               display: inline-block !important;
             }
             .delete-x:hover {
               color: #e74c3c;
+            }
+            .edit-pencil:hover {
+              color: #2980b9;
             }
           `}
         </style>
@@ -328,48 +425,61 @@ const handleSave = () => {
                 onSubmit={e => e.preventDefault()}
               >
                 {/* Text/number fields */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {[
-                    ['market_name', 'Market Name', 'text'],
-                    ['event_name', 'Event Name', 'text'],
-                    ['bet_name', 'Bet Name', 'text'],
-                    ['stake', 'Stake', 'number'],
-                    ['odds', 'Odds', 'number']
-                  ].map(([key, label, type]) => (
-                    <input
-                      key={key}
-                      type={type}
-                      placeholder={label}
-                      value={formValues[key]}
-                      style={{ ...styles.input, width: '100%' }}
-                      onChange={(e) => setFormValues({ ...formValues, [key]: type === 'number' ? e.target.value : e.target.value })}
-                      onBlur={() => setFormTouched(true)}
-                    />
-                  ))}
-                </div>
-                {/* Select fields */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {[
-                    ['sportsbook', 'Sportsbook', SPORTSBOOKS],
-                    ['sport', 'Sport', SPORTS],
-                    ['league', 'League', LEAGUES],
-                    ['bet_type', 'Bet Type', BET_TYPES],
-                    ['status', 'Status', STATUSES]
-                  ].map(([key, label, options]) => (
-                    <select
-                      key={key}
-                      value={formValues[key]}
-                      style={{ ...styles.input, width: '100%' }}
-                      onChange={(e) => setFormValues({ ...formValues, [key]: e.target.value })}
-                    >
-                      <option value="">{`Select ${label}`}</option>
-                      {options.map(([value, optionLabel]) => (
-                        <option key={value} value={value}>{optionLabel}</option>
-                      ))}
-                    </select>
-                  ))}
-                </div>
-                {/* Checkbox */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          {[
+                          ['market_name', 'Market Name', 'text'],
+                          ['event_name', 'Event Name', 'text'],
+                          ['bet_name', 'Bet Name', 'text'],
+                          ['stake', 'Stake', 'number'],
+                          ['odds', 'Odds', 'number']
+                          ].map(([key, label, type]) => (
+                          <input
+                            key={key}
+                            type={type}
+                            placeholder={label}
+                            value={formValues[key]}
+                            style={{ ...styles.input, width: '100%' }}
+                            onChange={(e) => setFormValues({ ...formValues, [key]: type === 'number' ? e.target.value : e.target.value })}
+                            onBlur={() => setFormTouched(true)}
+                          />
+                          ))}
+                        </div>
+                        {/* Select fields */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          {[
+                          ['sportsbook', 'Sportsbook', SPORTSBOOKS],
+                          ['sport', 'Sport', SPORTS],
+                          ['league', 'League', LEAGUES],
+                          ['bet_type', 'Bet Type', BET_TYPES],
+                          ['status', 'Status', STATUSES]
+                          ].map(([key, label, options]) => (
+                          <select
+                            key={key}
+                            value={formValues[key]}
+                            style={{ ...styles.input, width: '100%' }}
+                            onChange={(e) => setFormValues({ ...formValues, [key]: e.target.value })}
+                          >
+                            <option value="">{`Select ${label}`}</option>
+                            {options.map(([value, optionLabel]) => (
+                            <option key={value} value={value}>{optionLabel}</option>
+                            ))}
+                          </select>
+                          ))}
+                        </div>
+                        {/* Cashout amount input if status is cashout */}
+                        {formValues.status === 'cashout' && (
+                          <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="Cashout Amount"
+                          value={formValues.cashout_amount || ''}
+                          style={{ ...styles.input, width: '100%' }}
+                          onChange={e => setFormValues({ ...formValues, cashout_amount: e.target.value })}
+                          onBlur={() => setFormTouched(true)}
+                          />
+                        )}
+                        {/* Checkbox */}
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
                   <input
                     type="checkbox"
