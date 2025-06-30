@@ -28,8 +28,10 @@ class BetAdmin(admin.ModelAdmin):
     payout_display.short_description = 'Payout'
 
     def profit_display(self, obj):
-        return round(obj.profit, 2)
-    profit_display.short_description = 'Profit'
+        try:
+            return round(float(obj.profit), 2)
+        except (TypeError, ValueError):
+            return "N/A"
 
     class Media:
        js = ('bet_tracker/bets/static/admin/js/bet_dynamic_leagues.js',)

@@ -4,195 +4,405 @@ import { useAuth } from './auth/AuthProvider';
 import { motion } from 'framer-motion';
 import './index.css';
 
+const styles = {
+  thtd: {
+    padding: '8px',
+    borderBottom: '1px solid #ccc',
+    textAlign: 'left',
+    maxWidth: '72px',
+  },
+  input: {
+    padding: '10px 10px',
+    border: '1px solid #bfc9d9',
+    borderRadius: '5px',
+    fontSize: '0.9rem',
+    outline: 'none',
+    transition: 'border-color 0.2s',
+    background: '#f8fafc',
+    margin: '6px',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+    maxWidth: '300px',
+    display: 'flex',
+  },
+
+};
+
 function HomePage() {
-  console.log("✅ HomePage mounted");
   const [bets, setBets] = useState([]);
   const { accessToken, logout } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [formTouched, setFormTouched] = useState(false);
+  const [formValues, setFormValues] = useState({
+    sportsbook: '',
+    market_name: '',
+    event_name: '',
+    sport: '',
+    league: '',
+    bet_type: '',
+    bet_name: '',
+    stake: '',
+    odds: '',
+    bonus_bet: false,
+    status: 'pending'
+  });
 
-useEffect(() => {
-  if (!accessToken) return;
+  const BET_TYPES = [
+    ['normal', 'Normal'], ['low_hold', 'Low Hold'], ['arb', 'Arbitrage'], 
+    ['middle','Middle'], ['positive_ev', 'Positive EV'], ['future','Future']
+  ];
+  const SPORTSBOOKS = [
+    ['skybook', 'Skybook'], ['bovada', 'Bovada'], ['betonline', 'BetOnline']
+  ];
+  const SPORTS = [
+    ['soccer', 'Soccer'], ['basketball', 'Basketball'], ['american_football', 'Am.Football'],
+    ['ice_hockey','Ice Hockey'], ['baseball','Baseball'], ['tennis', 'Tennis']
+  ];
+  const LEAGUES = [
+    ['epl', 'English Premier League'], ['nba', 'NBA'], ['nfl', 'NFL'], ['ucl', 'UEFA Champions League']
+  ];
+  const STATUSES = [
+    ['won', 'Won'], ['lost', 'Lost'], ['cashout', 'Cashout'], ['pending', 'Pending'],
+    ['refunded', 'Refunded'], ['half_won', 'Half Won'], ['half_lost', 'Half Lost']
+  ];
 
-  console.log("🎯 Fetching bets with token...");
-  fetch('http://127.0.0.1:8000/api/bets/', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  })
-    .then(res => {
-      if (res.status === 401) {
-        console.warn("⚠️ Unauthorized – token may have expired.");
+  const requiredFields = [
+    'sportsbook', 'market_name', 'event_name', 'sport',
+    'league', 'bet_type', 'bet_name', 'stake', 'odds', 'status'
+  ];
 
-        setBets([]); // prevent crashes
+  const isFormValid = requiredFields.every(key => formValues[key] !== '' && formValues[key] !== null);
+
+  useEffect(() => {
+    if (!accessToken) return;
+
+    fetch('http://127.0.0.1:8000/api/bets/', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+      .then(res => {
+        if (res.status === 401) {
+          setBets([]);
+          setLoading(false);
+          return null;
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data) setBets(data);
         setLoading(false);
-        return null;
+      })
+      .catch(error => {
+        console.error('Error fetching bets:', error);
+        setBets([]);
+        setLoading(false);
+      });
+  }, [accessToken]);
+
+const handleSave = () => {
+  const cleanedFormValues = {
+    ...formValues,
+    stake: parseFloat(formValues.stake) || 0,
+    odds: parseFloat(formValues.odds) || 0
+  };
+
+  fetch('http://127.0.0.1:8000/api/bets/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`
+    },
+    body: JSON.stringify(cleanedFormValues)
+  })
+    .then(async res => {
+      if (!res.ok) {
+        const errorDetails = await res.json();
+        console.error('❌ Backend validation errors:', errorDetails);
+        throw new Error('Failed to save');
       }
       return res.json();
     })
-    .then(data => {
-      if (data) {
-        setBets(data);
-      }
-      setLoading(false);
+    .then(newBet => {
+      setBets(prev => [...prev, newBet]);
+      setShowModal(false);
+      setFormTouched(false);
+      setFormValues({
+        sportsbook: '',
+        market_name: '',
+        event_name: '',
+        sport: '',
+        league: '',
+        bet_type: '',
+        bet_name: '',
+        stake: '',
+        odds: '',
+        bonus_bet: false,
+        status: 'pending'
+      });
     })
-    .catch(error => {
-      console.error('❌ Error fetching bets:', error);
-      setBets([]); // ensure it's an array
-      setLoading(false);
-    });
-}, [accessToken]);
+    .catch(err => console.error('Save error:', err));
+};
 
 
-   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <header style={styles.header}>
-        <div style={styles.logo}>LOGO</div>
-        <motion.button
-          style={styles.logoutButton}
-          whileTap={{ scale: 0.9 }}
-          onClick={logout}
-        >
-          Logout
-        </motion.button>
+  // Add a delete handler
+  const handleDelete = (betId) => {
+    if (!window.confirm('Are you sure you want to delete this bet?')) return;
+    fetch(`http://127.0.0.1:8000/api/bets/${betId}/`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+      .then(res => {
+        if (res.ok) {
+          setBets(prev => prev.filter(bet => bet.id !== betId));
+        } else {
+          throw new Error('Failed to delete');
+        }
+      })
+      .catch(err => console.error('Delete error:', err));
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+      <header style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f4f4f4', borderBottom: '1px solid #ddd' }}>
+        <h1 style={{ margin: 0 }}>Bet Tracker</h1>
+        <motion.button onClick={logout} style={{ background: '#e74c3c', color: 'white', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px' }}>Logout</motion.button>
       </header>
 
-<main style={{ padding: '1rem' }}>
-  <h1>Bets</h1>
-  {loading ? (
-    <div className="spinner" />
-  ) : (
-    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign:"left", }}>
-      <thead>
-        <tr>
-          <th style={styles.thtd}>Created</th>
-          <th style={styles.thtd}>Sportsbook</th>
-          <th style={styles.thtd}>Market</th>
-          <th style={styles.thtd}>Event Name</th>
-          <th style={styles.thtd}>Sport</th>
-          <th style={styles.thtd}>League</th>
-          <th style={styles.thtd}>Type</th>
-          <th style={styles.thtd}>Bet</th>
-          <th style={styles.thtd}>Stake</th>
-          <th style={styles.thtd}>Odds</th>
-          <th style={styles.thtd}>Payout</th>
-          <th style={styles.thtd}>Profit</th>
-          <th style={styles.thtd}>Status</th>
-          <th style={styles.thtd}>Bonus</th>
-        </tr>
-      </thead>
-       <tbody>
-    {bets.map((bet) => {
-      const status = bet.status;
-      let chipStyle = { ...styles.chipBase, ...styles.chipDefault };
-
-      if (status === 'won') chipStyle = { ...styles.chipBase, ...styles.chipWon };
-      else if (status === 'half_won') chipStyle = { ...styles.chipBase, ...styles.chipHalfWon };
-      else if (status === 'lost') chipStyle = { ...styles.chipBase, ...styles.chipLost };
-      else if (status === 'half_lost') chipStyle = { ...styles.chipBase, ...styles.chipHalfLost };
-
-      return (
-        <tr key={bet.id}>
-          <td style={styles.thtd}>{bet.created_at ? new Date(bet.created_at).toLocaleDateString() : 'N/A'}</td>
-          <td style={styles.thtd}>{bet.sportsbook_display || 'N/A'}</td>
-          <td style={styles.thtd}>{bet.market_name || 'N/A'}</td>
-          <td style={styles.thtd}>{bet.event_name || 'N/A'}</td>
-          <td style={styles.thtd}>{bet.sport_display || 'N/A'}</td>
-          <td style={styles.thtd}>{bet.league_display || 'N/A'}</td>
-          <td style={styles.thtd}><span className="chip chip-default">{bet.bet_type_display || 'N/A'}</span></td>
-          <td style={styles.thtd}>{bet.bet_name || 'N/A'}</td>
-          <td style={styles.thtd}>{bet.stake ? `$${parseFloat(bet.stake).toFixed(2)}` : 'N/A'}</td>
-          <td style={styles.thtd}>{bet.odds || 'N/A'}</td>
-          <td style={styles.thtd}>{bet.payout || 'N/A'}</td>
-          <td
-        style={{
-          ...styles.thtd,
-          color:
-            bet.profit > 0
-          ? '#27ae60'
-          : bet.profit < 0
-          ? '#e74c3c'
-          : undefined,
-          fontWeight: bet.profit !== 0 ? 'bold' : undefined,
-        }}
+      <main style={{ padding: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h2 style={{ margin: 0 }}>Bets</h2>
+          <button
+            onClick={() => setShowModal(true)}
+            style={{ backgroundColor: '#3498db', color: 'white', padding: '0.6rem 1rem', borderRadius: '5px' }}
           >
-        {bet.profit || 'N/A'}
-          </td>
-          <td style={styles.thtd}>
-        <span style={chipStyle}>{bet.status_display || 'N/A'}</span>
-          </td>
-          <td style={styles.thtd}>
-        {bet.bonus_bet ? (
-          <span role="img" aria-label="Yes" style={{ color: '#27ae60', fontSize: '1.2em' }}>✅</span>
-        ) : (
-          <span role="img" aria-label="No" style={{ color: '#e74c3c', fontSize: '1.2em' }}>❌</span>
-        )}
-          </td>
-        </tr>
-      );
-    })}
-      </tbody>
-    </table>
-  )}
-</main>
+            Add a Bet
+          </button>
+        </div>
 
+        {!loading && bets.length > 0 && (
+          <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fafafa', border: '1px solid #ddd' }}>
+            <thead>
+              <tr>
+                <th style={styles.thtd}>Created</th>
+                <th style={styles.thtd}>Sportsbook</th>
+                <th style={styles.thtd}>Market</th>
+                <th style={styles.thtd}>Event Name</th>
+                <th style={styles.thtd}>Sport</th>
+                <th style={styles.thtd}>League</th>
+                <th style={styles.thtd}>Type</th>
+                <th style={styles.thtd}>Bet</th>
+                <th style={styles.thtd}>Stake</th>
+                <th style={styles.thtd}>Odds</th>
+                <th style={styles.thtd}>Status</th>
+                <th style={styles.thtd}>Payout</th>
+                <th style={styles.thtd}>Profit</th>
+                <th style={styles.thtd}>Bonus</th>
+                <th style={{ ...styles.thtd, width: '32px' }}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {bets.map((bet) => (
+                <tr
+                  key={bet.id}
+                  style={{ position: 'relative', cursor: 'pointer' }}
+                  className="bet-row"
+                >
+                  <td style={styles.thtd}>{bet.created_at ? new Date(bet.created_at).toLocaleDateString() : 'N/A'}</td>
+                  <td style={styles.thtd}>{bet.sportsbook_display || 'N/A'}</td>
+                  <td style={styles.thtd}>{bet.market_name || 'N/A'}</td>
+                  <td style={styles.thtd}>{bet.event_name || 'N/A'}</td>
+                  <td style={styles.thtd}>{bet.sport_display || 'N/A'}</td>
+                  <td style={styles.thtd}>{bet.league_display || 'N/A'}</td>
+                  <td style={styles.thtd}>{bet.bet_type_display || 'N/A'}</td>
+                  <td style={styles.thtd}>{bet.bet_name || 'N/A'}</td>
+                  <td style={styles.thtd}>{bet.stake ? `$${parseFloat(bet.stake).toFixed(2)}` : 'N/A'}</td>
+                  <td style={styles.thtd}>{bet.odds || 'N/A'}</td>
+                  <td style={styles.thtd}>{bet.status_display || 'N/A'}</td>
+                  <td style={styles.thtd}>{bet.payout ? `$${parseFloat(bet.payout).toFixed(2)}` : 'N/A'}</td>
+                  <td
+                    style={{
+                      ...styles.thtd,
+                      color:
+                        bet.profit > 0
+                          ? '#27ae60'
+                          : bet.profit < 0
+                          ? '#e74c3c'
+                          : undefined,
+                      fontWeight: bet.profit !== 0 ? 'bold' : undefined,
+                    }}
+                  >
+                    {typeof bet.profit === 'number'
+                      ? `$${parseFloat(bet.profit).toFixed(2)}`
+                      : 'N/A'}
+                  </td>
+                  <td style={styles.thtd}>{bet.bonus_bet ? '✅' : '❌'}</td>
+                  <td style={{ ...styles.thtd, width: '32px', position: 'relative', padding: 0 }}>
+                    <button
+                      className="delete-x"
+                      title="Delete"
+                      onClick={() => handleDelete(bet.id)}
+                      style={{
+                        display: 'none',
+                        position: 'absolute',
+                        right: '8px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: '#000',
+                        fontWeight: 'bold',
+                        fontSize: '18px',
+                        cursor: 'pointer',
+                        background: 'transparent',
+                        border: 'none',
+                        zIndex: 2,
+                        transition: 'color 0.2s',
+                        lineHeight: 1,
+                        padding: 0,
+                      }}
+                      tabIndex={-1}
+                    >
+                      &#10005;
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {!loading && bets.length === 0 && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '240px' }}>
+            <h2 style={{ color: '#888', fontWeight: 400 }}>Please add your bets</h2>
+          </div>
+        )}
+
+        {/* Inline CSS for hover effect */}
+        <style>
+          {`
+            .bet-row:hover .delete-x {
+              display: inline-block !important;
+            }
+            .delete-x:hover {
+              color: #e74c3c;
+            }
+          `}
+        </style>
+
+        {showModal && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              backgroundColor: 'rgba(0,0,0,0.3)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1000
+            }}
+            onClick={() => setShowModal(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'white',
+                padding: '2rem',
+                borderRadius: '8px',
+                width: '420px',
+                maxWidth: '100vw',
+                boxSizing: 'border-box',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.15)'
+              }}
+            >
+              <h2 style={{ marginTop: 0 }}>Add New Bet</h2>
+              <form
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem'
+                }}
+                onSubmit={e => e.preventDefault()}
+              >
+                {/* Text/number fields */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {[
+                    ['market_name', 'Market Name', 'text'],
+                    ['event_name', 'Event Name', 'text'],
+                    ['bet_name', 'Bet Name', 'text'],
+                    ['stake', 'Stake', 'number'],
+                    ['odds', 'Odds', 'number']
+                  ].map(([key, label, type]) => (
+                    <input
+                      key={key}
+                      type={type}
+                      placeholder={label}
+                      value={formValues[key]}
+                      style={{ ...styles.input, width: '100%' }}
+                      onChange={(e) => setFormValues({ ...formValues, [key]: type === 'number' ? e.target.value : e.target.value })}
+                      onBlur={() => setFormTouched(true)}
+                    />
+                  ))}
+                </div>
+                {/* Select fields */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {[
+                    ['sportsbook', 'Sportsbook', SPORTSBOOKS],
+                    ['sport', 'Sport', SPORTS],
+                    ['league', 'League', LEAGUES],
+                    ['bet_type', 'Bet Type', BET_TYPES],
+                    ['status', 'Status', STATUSES]
+                  ].map(([key, label, options]) => (
+                    <select
+                      key={key}
+                      value={formValues[key]}
+                      style={{ ...styles.input, width: '100%' }}
+                      onChange={(e) => setFormValues({ ...formValues, [key]: e.target.value })}
+                    >
+                      <option value="">{`Select ${label}`}</option>
+                      {options.map(([value, optionLabel]) => (
+                        <option key={value} value={value}>{optionLabel}</option>
+                      ))}
+                    </select>
+                  ))}
+                </div>
+                {/* Checkbox */}
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={formValues.bonus_bet}
+                    onChange={(e) => setFormValues({ ...formValues, bonus_bet: e.target.checked })}
+                  /> Bonus Bet
+                </label>
+                {/* Buttons */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+                  <button type="button" onClick={() => setShowModal(false)}>Cancel</button>
+                  <button
+                    type="button"
+                    disabled={!formTouched || !isFormValid}
+                    onClick={handleSave}
+                    style={{
+                      backgroundColor: !formTouched || !isFormValid ? '#ccc' : '#27ae60',
+                      color: 'white',
+                      padding: '0.5rem 1rem',
+                      border: 'none',
+                      borderRadius: '5px',
+                      cursor: !formTouched || !isFormValid ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </main>
     </motion.div>
   );
 }
-
-const styles = {
-  header: {
-    background: '#f4f4f4',
-    padding: '1rem',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottom: '1px solid #ddd'
-  },
-  logo: {
-    fontWeight: 'bold',
-    fontSize: '1.2rem'
-  },
-  logoutButton: {
-    padding: '0.5rem 1rem',
-    background: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    backgroundColor: '#fafafa',
-    border: '1px solid #ddd',
-    borderRadius: '6px',
-    overflow: 'hidden',
-    fontSize: '0.95rem',
-  },
-  thtd: {
-    padding: '12px 16px',
-    borderBottom: '1px solid #e0e0e0',
-    textAlign: 'left',
-  },
-  chipBase: {
-    display: 'inline-block',
-    padding: '4px 10px',
-    borderRadius: '12px',
-    fontSize: '0.85rem',
-    fontWeight: 500,
-    color: 'white',
-    textTransform: 'capitalize',
-  },
-  chipWon: { backgroundColor: '#27ae60' },
-  chipHalfWon: { backgroundColor: '#27ae60' },
-  chipLost: { backgroundColor: '#e74c3c' },
-  chipHalfLost: { backgroundColor: '#e74c3c' },
-  chipDefault: { backgroundColor: '#7f8c8d' },
-};
-
 
 export default HomePage;

@@ -5,9 +5,9 @@ from django.http import HttpResponse
 from rest_framework import generics
 from .serializers import RegisterSerializer
 from django.contrib.auth import get_user_model
-from rest_framework.permissions import AllowAny
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework.response import Response
 
 User = get_user_model()
 
@@ -20,22 +20,18 @@ class ProtectedView(APIView):
     def get(self, request):
         return Response({"message": "You are authenticated!"})
 
-class BetListView(generics.ListAPIView):
+class BetViewSet(viewsets.ModelViewSet):
     serializer_class = BetSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Bet.objects.filter(user=self.request.user)
-    
-#class BetViewSet(viewsets.ModelViewSet):
- #   serializer_class = BetSerializer
-  #  permission_classes = [permissions.IsAuthenticated]
 
-   # def get_queryset(self):
-     #   return Bet.objects.filter(user=self.request.user)
-#
-   # def perform_create(self, serializer):
-      #  serializer.save(user=self.request.user)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_destroy(self, instance):
+        instance.delete()
 
 class PlayerViewSet(viewsets.ModelViewSet):
     queryset = Player.objects.all()

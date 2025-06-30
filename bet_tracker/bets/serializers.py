@@ -18,7 +18,7 @@ class BetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bet
         fields = '__all__'
-        read_only_fields = ['payout', 'profit']
+        read_only_fields = ['user', 'payout', 'profit']
 
     def get_payout(self, obj):
         return obj.payout

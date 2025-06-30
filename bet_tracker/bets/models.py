@@ -275,12 +275,17 @@ class Bet(models.Model):
             return self.stake/2
         elif self.status == 'refunded':
             return self.stake
+        elif self.status == 'pending':
+            return Decimal('0.0')
         else:
             return Decimal('0.0')
 
     @property
     def profit(self):
-        return self.payout - self.stake
+        if self.status == 'pending':
+            return str("-")
+        else:
+            return self.payout - self.stake
 
 
 def clean(self):
