@@ -57,6 +57,19 @@
 }
 
 
-/* calculator page css 
+/* calculator page css */
+.output-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+.profit-positive {
+  color: #2ecc71; /* green */
+  font-weight: bold;
+}
 
-...*/
+.profit-negative {
+  color: #e74c3c; /* red */
+  font-weight: bold;
+}
