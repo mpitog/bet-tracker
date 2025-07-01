@@ -211,9 +211,6 @@ class Bet(models.Model):
         ('gantest1', 'GANTest1'),
         ('gantest2', 'GANTest2'),
         ('circail', 'CircaIL'),
-        ('ts_lambda', 'ts_lambda'),
-        ('ts_lambda_stage', 'ts_lambda_stage'),
-        ('donbest', 'DonBest'),
         ('bettorsden', 'BettorsDen'),
     ]
     STATUSES = [
