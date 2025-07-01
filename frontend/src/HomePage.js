@@ -3,36 +3,23 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from './auth/AuthProvider';
 import { motion } from 'framer-motion';
 import './index.css';
+import { SPORTSBOOKS } from './constants/constants';
+import { BET_TYPES } from './constants/constants';
+import { STATUSES } from './constants/constants';
+import { SPORTS } from './constants/constants';
+import { LEAGUES } from './constants/constants';
+import { requiredFields } from './constants/constants';
+import Header from './components/Header';
+import './styles/main.css';
+import AddBetModal from './components/AddBetModal';
 
-const styles = {
-  thtd: {
-    padding: '8px',
-    borderBottom: '1px solid #ccc',
-    textAlign: 'left',
-    maxWidth: '72px',
-  },
-  input: {
-    padding: '10px 10px',
-    border: '1px solid #bfc9d9',
-    borderRadius: '5px',
-    fontSize: '0.9rem',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-    background: '#f8fafc',
-    margin: '6px',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-    maxWidth: '300px',
-    display: 'flex',
-  },
-
-};
 
 function HomePage() {
   const [bets, setBets] = useState([]);
   const { accessToken, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formTouched, setFormTouched] = useState(false);
+
   const [formValues, setFormValues] = useState({
     sportsbook: '',
     market_name: '',
@@ -47,31 +34,6 @@ function HomePage() {
     status: 'pending'
   });
 
-  const BET_TYPES = [
-    ['normal', 'Normal'], ['low_hold', 'Low Hold'], ['arb', 'Arbitrage'], 
-    ['middle','Middle'], ['positive_ev', 'Positive EV'], ['future','Future']
-  ];
-  const SPORTSBOOKS = [
-    ['skybook', 'Skybook'], ['bovada', 'Bovada'], ['betonline', 'BetOnline']
-  ];
-  const SPORTS = [
-    ['soccer', 'Soccer'], ['basketball', 'Basketball'], ['american_football', 'Am.Football'],
-    ['ice_hockey','Ice Hockey'], ['baseball','Baseball'], ['tennis', 'Tennis']
-  ];
-  const LEAGUES = [
-    ['epl', 'English Premier League'], ['nba', 'NBA'], ['nfl', 'NFL'], ['ucl', 'UEFA Champions League']
-  ];
-  const STATUSES = [
-    ['won', 'Won'], ['lost', 'Lost'], ['cashout', 'Cashout'], ['pending', 'Pending'],
-    ['refunded', 'Refunded'], ['half_won', 'Half Won'], ['half_lost', 'Half Lost']
-  ];
-
-  const requiredFields = [
-    'sportsbook', 'market_name', 'event_name', 'sport',
-    'league', 'bet_type', 'bet_name', 'stake', 'odds', 'status'
-  ];
-
-  const isFormValid = requiredFields.every(key => formValues[key] !== '' && formValues[key] !== null);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -126,7 +88,6 @@ const handleSave = () => {
     .then(newBet => {
       setBets(prev => [...prev, newBet]);
       setShowModal(false);
-      setFormTouched(false);
       setFormValues({
         sportsbook: '',
         market_name: '',
@@ -143,8 +104,6 @@ const handleSave = () => {
     })
     .catch(err => console.error('Save error:', err));
 };
-
-
   // delete handler
   const handleDelete = (betId) => {
     if (!window.confirm('Are you sure you want to delete this bet?')) return;
@@ -187,16 +146,11 @@ const handleSave = () => {
       })
       .catch(err => console.error('Edit error:', err));
   };
-
-
+  
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-      <header style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f4f4f4', borderBottom: '1px solid #ddd' }}>
-        <h1 style={{ margin: 0 }}>Bet Tracker</h1>
-        <motion.button onClick={logout} style={{ background: '#e74c3c', color: 'white', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px' }}>Logout</motion.button>
-      </header>
-
-      <main style={{ padding: '1rem' }}>
+      <div>
+        <Header />
+        <main style={{ padding: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 style={{ margin: 0 }}>Bets</h2>
           <button
@@ -206,26 +160,25 @@ const handleSave = () => {
             Add a Bet
           </button>
         </div>
-
         {!loading && bets.length > 0 && (
           <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fafafa', border: '1px solid #ddd' }}>
             <thead>
               <tr>
-                <th style={styles.thtd}>Created</th>
-                <th style={styles.thtd}>Sportsbook</th>
-                <th style={styles.thtd}>Market</th>
-                <th style={styles.thtd}>Event Name</th>
-                <th style={styles.thtd}>Sport</th>
-                <th style={styles.thtd}>League</th>
-                <th style={styles.thtd}>Type</th>
-                <th style={styles.thtd}>Bet</th>
-                <th style={styles.thtd}>Stake</th>
-                <th style={styles.thtd}>Odds</th>
-                <th style={styles.thtd}>Status</th>
-                <th style={styles.thtd}>Payout</th>
-                <th style={styles.thtd}>Profit</th>
-                <th style={styles.thtd}>Bonus</th>
-                <th style={{ ...styles.thtd, width: '32px' }}></th>
+                <th className="thtd">Created</th>
+                <th className="thtd">Sportsbook</th>
+                <th className="thtd">Market</th>
+                <th className="thtd">Event Name</th>
+                <th className="thtd">Sport</th>
+                <th className="thtd">League</th>
+                <th className="thtd">Type</th>
+                <th className="thtd">Bet</th>
+                <th className="thtd">Stake</th>
+                <th className="thtd">Odds</th>
+                <th className="thtd">Status</th>
+                <th className="thtd">Payout</th>
+                <th className="thtd">Profit</th>
+                <th className="thtd">Bonus Bet</th>
+                <th className="thtd"></th>
               </tr>
             </thead>
             <tbody>
@@ -235,17 +188,17 @@ const handleSave = () => {
                   style={{ position: 'relative', cursor: 'pointer' }}
                   className="bet-row"
                 >
-                  <td style={styles.thtd}>{bet.created_at ? new Date(bet.created_at).toLocaleDateString() : 'N/A'}</td>
-                  <td style={styles.thtd}>{bet.sportsbook_display || 'N/A'}</td>
-                  <td style={styles.thtd}>{bet.market_name || 'N/A'}</td>
-                  <td style={styles.thtd}>{bet.event_name || 'N/A'}</td>
-                  <td style={styles.thtd}>{bet.sport_display || 'N/A'}</td>
-                  <td style={styles.thtd}>{bet.league_display || 'N/A'}</td>
-                  <td style={styles.thtd}>{bet.bet_type_display || 'N/A'}</td>
-                  <td style={styles.thtd}>{bet.bet_name || 'N/A'}</td>
-                  <td style={styles.thtd}>{bet.stake ? `$${parseFloat(bet.stake).toFixed(2)}` : 'N/A'}</td>
-                  <td style={styles.thtd}>{bet.odds || 'N/A'}</td>
-                  <td style={{ ...styles.thtd, position: 'relative' }}>
+                  <td className="thtd">{bet.created_at ? new Date(bet.created_at).toLocaleDateString() : 'N/A'}</td>
+                  <td className="thtd">{bet.sportsbook_display || 'N/A'}</td>
+                  <td className="thtd">{bet.market_name || 'N/A'}</td>
+                  <td className="thtd">{bet.event_name || 'N/A'}</td>
+                  <td className="thtd">{bet.sport_display || 'N/A'}</td>
+                  <td className="thtd">{bet.league_display || 'N/A'}</td>
+                  <td className="thtd">{bet.bet_type_display || 'N/A'}</td>
+                  <td className="thtd">{bet.bet_name || 'N/A'}</td>
+                  <td className="thtd">{bet.stake ? `$${parseFloat(bet.stake).toFixed(2)}` : 'N/A'}</td>
+                  <td className="thtd">{bet.odds || 'N/A'}</td>
+                  <td className="thtd" style={{ position: 'relative' }}>
                     {bet.editingStatus ? (
                       <select
                         value={bet.status}
@@ -311,10 +264,9 @@ const handleSave = () => {
                       </span>
                     )}
                   </td>
-                  <td style={styles.thtd}>{bet.payout ? `$${parseFloat(bet.payout).toFixed(2)}` : 'N/A'}</td>
-                  <td
+                  <td className="thtd">{bet.payout ? `$${parseFloat(bet.payout).toFixed(2)}` : 'N/A'}</td>
+                  <td className="thtd"
                     style={{
-                      ...styles.thtd,
                       color:
                         bet.profit > 0
                           ? '#27ae60'
@@ -328,10 +280,10 @@ const handleSave = () => {
                       ? `$${parseFloat(bet.profit).toFixed(2)}`
                       : 'N/A'}
                   </td>
-                  <td style={styles.thtd}>{bet.bonus_bet ? '✅' : '❌'}</td>
-                  <td style={{ ...styles.thtd, width: '32px', position: 'relative', padding: 0 }}>
-                    
-                    
+                  <td className="thtd">{bet.bonus_bet ? '✅' : '❌'}</td>
+                  <td className="thtd" style={{ width: '32px', position: 'relative', padding: 0 }}>
+
+
                     {/* Delete X icon */}
                     <button
                       className="delete-x"
@@ -370,148 +322,21 @@ const handleSave = () => {
             <h2 style={{ color: '#888', fontWeight: 400 }}>Please add your bets</h2>
           </div>
         )}
-
-        {/* Inline CSS for hover effect */}
-        <style>
-          {`
-            .bet-row:hover .delete-x,
-            .bet-row:hover .edit-pencil {
-              display: inline-block !important;
-            }
-            .delete-x:hover {
-              color: #e74c3c;
-            }
-            .edit-pencil:hover {
-              color: #2980b9;
-            }
-          `}
-        </style>
-
-        {showModal && (
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              backgroundColor: 'rgba(0,0,0,0.3)',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 1000
-            }}
-            onClick={() => setShowModal(false)}
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                background: 'white',
-                padding: '2rem',
-                borderRadius: '8px',
-                width: '420px',
-                maxWidth: '100vw',
-                boxSizing: 'border-box',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.15)'
-              }}
-            >
-              <h2 style={{ marginTop: 0 }}>Add New Bet</h2>
-              <form
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1rem'
-                }}
-                onSubmit={e => e.preventDefault()}
-              >
-                {/* Text/number fields */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                          {[
-                          ['market_name', 'Market Name', 'text'],
-                          ['event_name', 'Event Name', 'text'],
-                          ['bet_name', 'Bet Name', 'text'],
-                          ['stake', 'Stake', 'number'],
-                          ['odds', 'Odds', 'number']
-                          ].map(([key, label, type]) => (
-                          <input
-                            key={key}
-                            type={type}
-                            placeholder={label}
-                            value={formValues[key]}
-                            style={{ ...styles.input, width: '100%' }}
-                            onChange={(e) => setFormValues({ ...formValues, [key]: type === 'number' ? e.target.value : e.target.value })}
-                            onBlur={() => setFormTouched(true)}
-                          />
-                          ))}
-                        </div>
-                        {/* Select fields */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                          {[
-                          ['sportsbook', 'Sportsbook', SPORTSBOOKS],
-                          ['sport', 'Sport', SPORTS],
-                          ['league', 'League', LEAGUES],
-                          ['bet_type', 'Bet Type', BET_TYPES],
-                          ['status', 'Status', STATUSES]
-                          ].map(([key, label, options]) => (
-                          <select
-                            key={key}
-                            value={formValues[key]}
-                            style={{ ...styles.input, width: '100%' }}
-                            onChange={(e) => setFormValues({ ...formValues, [key]: e.target.value })}
-                          >
-                            <option value="">{`Select ${label}`}</option>
-                            {options.map(([value, optionLabel]) => (
-                            <option key={value} value={value}>{optionLabel}</option>
-                            ))}
-                          </select>
-                          ))}
-                        </div>
-                        {/* Cashout amount input if status is cashout */}
-                        {formValues.status === 'cashout' && (
-                          <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="Cashout Amount"
-                          value={formValues.cashout_amount || ''}
-                          style={{ ...styles.input, width: '100%' }}
-                          onChange={e => setFormValues({ ...formValues, cashout_amount: e.target.value })}
-                          onBlur={() => setFormTouched(true)}
-                          />
-                        )}
-                        {/* Checkbox */}
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <input
-                    type="checkbox"
-                    checked={formValues.bonus_bet}
-                    onChange={(e) => setFormValues({ ...formValues, bonus_bet: e.target.checked })}
-                  /> Bonus Bet
-                </label>
-                {/* Buttons */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
-                  <button type="button" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button
-                    type="button"
-                    disabled={!formTouched || !isFormValid}
-                    onClick={handleSave}
-                    style={{
-                      backgroundColor: !formTouched || !isFormValid ? '#ccc' : '#27ae60',
-                      color: 'white',
-                      padding: '0.5rem 1rem',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: !formTouched || !isFormValid ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    Save
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+        {/* modal for adding new bet */}
+        <AddBetModal
+          show={showModal}
+          setShowModal={setShowModal}
+          formValues={formValues}
+          setFormValues={setFormValues}
+          handleSave={handleSave}
+          SPORTSBOOKS={SPORTSBOOKS}
+          SPORTS={SPORTS}
+          LEAGUES={LEAGUES}
+          BET_TYPES={BET_TYPES}
+          STATUSES={STATUSES}
+        />
       </main>
-    </motion.div>
+      </div>
   );
 }
 
