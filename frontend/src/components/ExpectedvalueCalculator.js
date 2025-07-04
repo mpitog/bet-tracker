@@ -1,8 +1,8 @@
-//\src\components/// ArbitrageCalculator.js
+//\src\components/// ExpectedvalueCalculator.js
 import React, { useState, useEffect } from 'react';
 import '../styles/main.css';
 
-const ArbitrageCalculator = () => {
+const ExpectedvalueCalculator = () => {
     const [oddsA, setOddsA] = useState('');
     const [stakeA, setStakeA] = useState('');
     const [oddsB, setOddsB] = useState('');
@@ -47,7 +47,7 @@ const ArbitrageCalculator = () => {
     return (
         <>
             <div className="calculator-container">
-                <h2 style={{ marginBottom: '1rem' }}>Arbitrage Calculator</h2>
+                <h2 style={{ marginBottom: '1rem' }}>Expected Value Calculator</h2>
                 <div className="calculator-grid-two-col">
                     <div>
                         <div className="input-group">
@@ -111,4 +111,4 @@ const ArbitrageCalculator = () => {
 };
 
 
-export default ArbitrageCalculator;
+export default ExpectedvalueCalculator;

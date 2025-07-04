@@ -1,20 +1,24 @@
 // src/Calculators.js
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Header from './components/Header'; // Adjust the import path as necessary
 import './styles/main.css';
 import ArbitrageCalculator from './components/ArbitrageCalculator';
+import ExpectedvalueCalculator from './components/ExpectedvalueCalculator';
 
 const Calculators = () => {
-  return (
+return (
     <>
-      <Header />
-      <div style={{ padding: '1rem' }}>
-        <h2>Betting Calculators</h2>
-        <ArbitrageCalculator />
-        {/* Future calculators will go here */}
-      </div>
+        <Header />
+        <div className='calculator-flex-col'>
+            <h2>Betting Calculators</h2>
+            <div className='main-calculator-grid-two-col' >
+                <ArbitrageCalculator />
+                <ExpectedvalueCalculator />
+                {/* Future calculators will go here */}
+            </div>
+        </div>
     </>
-  );
+);
 };
 
 export default Calculators;
