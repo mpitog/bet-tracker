@@ -5,49 +5,88 @@ import '../styles/main.css';
 const ExpectedvalueCalculator = () => {
     const [oddsA, setOddsA] = useState('');
     const [stakeA, setStakeA] = useState('');
-    const [oddsB, setOddsB] = useState('');
+    const [fairWinProb, setFairWinProb] = useState('');
 
-    const [payoutA, setPayoutA] = useState(0);
-    const [stakeB, setStakeB] = useState(0);
-    const [payoutB, setPayoutB] = useState(0);
-    const [totalStake, setTotalStake] = useState(0);
+    const [fairLossProb, setFairLossProb] = useState(0);
+    const [expectedValue, setExpectedValue] = useState(0);
     const [profit, setProfit] = useState(0);
-    const [profitPercent, setProfitPercent] = useState(0);
-
     useEffect(() => {
         const oA = parseFloat(oddsA);
         const sA = parseFloat(stakeA);
-        const oB = parseFloat(oddsB);
+        const pWin = parseFloat(fairWinProb);
+        if (isNaN(oA) || isNaN(sA) || isNaN(pWin)) {
+            setFairLossProb(0);
+            setExpectedValue(0);
+            return;
+        }
 
-        if (isNaN(oA) || isNaN(sA) || isNaN(oB)) return;
+        const pLoss = 1 - pWin;
+        const ev = (pWin * (oA * sA - sA)) - (pLoss * sA);
 
-        const calculatedPayoutA = oA * sA;
-        const calculatedStakeB = calculatedPayoutA / oB;
-        const calculatedPayoutB = oB * calculatedStakeB;
-        const calculatedTotalStake = sA + calculatedStakeB;
-        const calculatedProfit = calculatedPayoutA - calculatedTotalStake;
-        const calculatedProfitPercent = (calculatedProfit / calculatedPayoutA) * 100;
-
-        setPayoutA(calculatedPayoutA);
-        setStakeB(calculatedStakeB);
-        setPayoutB(calculatedPayoutB);
-        setTotalStake(calculatedTotalStake);
-        setProfit(calculatedProfit);
-        setProfitPercent(calculatedProfitPercent);
-    }, [oddsA, stakeA, oddsB]);
+        setFairLossProb(pLoss);
+        setExpectedValue(ev);
+    }, [oddsA, stakeA, fairWinProb]);
 
     const getProfitClass = () => {
-        if (profit > 0) return 'profit-positive';
-        if (profit < 0) return 'profit-negative';
+        if (expectedValue > 0) return 'profit-positive';
+        if (expectedValue < 0) return 'profit-negative';
         return '';
     };
 
-    const isBlank = oddsA === '' && stakeA === '' && oddsB === '';
+    const isBlank = oddsA === '' && stakeA === '' && fairWinProb === '';
 
     return (
         <>
             <div className="calculator-container">
-                <h2 style={{ marginBottom: '1rem' }}>Expected Value Calculator</h2>
+                <h2 style={{ marginBottom: '1rem' }}>
+                    Expected Value Calculator
+                    <span
+                        style={{
+                            marginLeft: '8px',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            display: 'inline-block'
+                        }}
+                        tabIndex={0}
+                        onFocus={e => {
+                            const tooltip = e.target.querySelector('.tooltip-text');
+                            if (tooltip) tooltip.style.visibility = 'visible';
+                        }}
+                        onBlur={e => {
+                            const tooltip = e.target.querySelector('.tooltip-text');
+                            if (tooltip) tooltip.style.visibility = 'hidden';
+                        }}
+                        onMouseEnter={e => {
+                            const tooltip = e.currentTarget.querySelector('.tooltip-text');
+                            if (tooltip) tooltip.style.visibility = 'visible';
+                        }}
+                        onMouseLeave={e => {
+                            const tooltip = e.currentTarget.querySelector('.tooltip-text');
+                            if (tooltip) tooltip.style.visibility = 'hidden';
+                        }}
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ verticalAlign: 'middle' }}
+                        >
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12" y2="8" />
+                        </svg>
+                        <span
+                            className="tooltip-text"
+                        >
+                            Calculates your profit margin against the sportsbook for a specific bet. The Expected Value (EV) Calculator uses three inputs: your stake, the odds of your wager, and the implied probability of winning.
+                        </span>
+                    </span>
+                </h2>
                 <div className="calculator-grid-two-col">
                     <div>
                         <div className="input-group">
@@ -73,36 +112,22 @@ const ExpectedvalueCalculator = () => {
                             />
                         </div>
                         <div className="input-group">
-                            <label className="input-label">Decimal Odds B:</label>
+                            <label className="input-label">Fair Win Prob. (0-1):</label>
                             <input
                                 className="inputField"
                                 type="number"
-                                value={oddsB}
-                                onChange={(e) => setOddsB(e.target.value)}
-                                step="any"
-                                min="1"
-                            />
-                        </div>
-                        <div className="input-group">
-                            <label className="input-label">Stake B:</label>
-                            <input
-                                className="inputField"
-                                type="number"
-                                value={isBlank ? "" : stakeB}
+                                value={fairWinProb}
+                                onChange={(e) => setFairWinProb(e.target.value)}
                                 step="any"
                                 min="0"
-                                readOnly
+                                max="1"
                             />
                         </div>
                     </div>
 
-                    <div className="output-group" >
-                        <p><strong>Payout A:</strong> {payoutA.toFixed(2)}</p>
-                        <p><strong>Payout B:</strong> {payoutB.toFixed(2)}</p>
-                        <p><strong>Total Stake:</strong> {totalStake.toFixed(2)}</p>
-                        <p><strong>Total Payout:</strong> {payoutA.toFixed(2)}</p>
-                        <p className={getProfitClass()}><strong>Profit:</strong> {profit.toFixed(2)}</p>
-                        <p className={getProfitClass()}><strong>Profit (%):</strong> {profitPercent.toFixed(2)}%</p>
+                    <div className="output-group">
+                        <p><strong>Fair Loss Probability:</strong> {isBlank ? '' : fairLossProb.toFixed(4)}</p>
+                        <p className={getProfitClass()}><strong>Expected Value:</strong> {isBlank ? '' : expectedValue.toFixed(2)}</p>
                     </div>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-//\src\components/// ArbitrageCalculator.js
+//\src\components\ ArbitrageCalculator.js
 import React, { useState, useEffect } from 'react';
 import '../styles/main.css';
 
@@ -47,7 +47,55 @@ const ArbitrageCalculator = () => {
     return (
         <>
             <div className="calculator-container">
-                <h2 style={{ marginBottom: '1rem' }}>Arbitrage Calculator</h2>
+                <h2 style={{ marginBottom: '1rem' }}>
+                    Arbitrage Calculator
+                    <span
+                        style={{
+                            marginLeft: '8px',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            display: 'inline-block'
+                        }}
+                        tabIndex={0}
+                        onFocus={e => {
+                            const tooltip = e.target.querySelector('.tooltip-text');
+                            if (tooltip) tooltip.style.visibility = 'visible';
+                        }}
+                        onBlur={e => {
+                            const tooltip = e.target.querySelector('.tooltip-text');
+                            if (tooltip) tooltip.style.visibility = 'hidden';
+                        }}
+                        onMouseEnter={e => {
+                            const tooltip = e.currentTarget.querySelector('.tooltip-text');
+                            if (tooltip) tooltip.style.visibility = 'visible';
+                        }}
+                        onMouseLeave={e => {
+                            const tooltip = e.currentTarget.querySelector('.tooltip-text');
+                            if (tooltip) tooltip.style.visibility = 'hidden';
+                        }}
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ verticalAlign: 'middle' }}
+                        >
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12" y2="8" />
+                        </svg>
+                        <span
+                            className="tooltip-text"
+                        >
+                         Enter the odds for any two-way market in the calculator on the left, and it will determine whether an arbitrage opportunity exists and calculate the optimal stake for each outcome.
+                        </span>
+                    </span>
+                </h2>
                 <div className="calculator-grid-two-col">
                     <div>
                         <div className="input-group">

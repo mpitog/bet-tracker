@@ -10,7 +10,7 @@ return (
     <>
         <Header />
         <div className='calculator-flex-col'>
-            <h2>Betting Calculators</h2>
+            <h1>Betting Calculators</h1>
             <div className='main-calculator-grid-two-col' >
                 <ArbitrageCalculator />
                 <ExpectedvalueCalculator />
