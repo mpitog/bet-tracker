@@ -3,7 +3,9 @@ import { AuthProvider } from './auth/AuthProvider';
 import PrivateRoute from './auth/PrivateRoute';
 import LoginPage from './auth/Login';
 import HomePage from './HomePage';
-import Calculators from './Calculators'; // ← create this page
+import Calculators from './Calculators'; 
+import CheckoutButton from './components/CheckoutButton'; 
+
 
 function App() {
   return (

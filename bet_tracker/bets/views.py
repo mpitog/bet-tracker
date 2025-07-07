@@ -8,8 +8,13 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.conf import settings
+import stripe
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 User = get_user_model()
+
 
 def some_view(request):
     return HttpResponse("This is some_view!")
@@ -42,3 +47,25 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
+
+
+#stripe payment view
+class CreateCheckoutSessionView(APIView):
+    def post(self, request):
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': 'Premium Bet Tracker Access',
+                    },
+                    'unit_amount': 1000,  # $10.00
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url='http://localhost:3000/success',
+            cancel_url='http://localhost:3000/cancel',
+        )
+        return Response({'checkout_url': session.url})

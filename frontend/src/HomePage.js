@@ -12,7 +12,7 @@ import { requiredFields } from './constants/constants';
 import Header from './components/Header';
 import './styles/main.css';
 import AddBetModal from './components/AddBetModal';
-
+import CheckoutButton from './components/CheckoutButton';
 
 function HomePage() {
   const [bets, setBets] = useState([]);
@@ -152,7 +152,7 @@ const handleSave = () => {
         <Header />
         <main style={{ padding: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ margin: 0 }}>Bet tracker</h2>
+          <h2 style={{ margin: 0 }}>Bets</h2>
           <button
             onClick={() => setShowModal(true)}
             style={{ backgroundColor: '#3498db', color: 'white', padding: '0.6rem 1rem', borderRadius: '5px' }}
@@ -335,8 +335,13 @@ const handleSave = () => {
           BET_TYPES={BET_TYPES}
           STATUSES={STATUSES}
         />
+        {/* Checkout button */}
+        <div style={{ marginTop: '2rem', textAlign: 'right' }}>
+         <CheckoutButton />
+        </div>
       </main>
-      </div>
+
+    </div>
   );
 }
 
