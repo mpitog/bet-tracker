@@ -4,7 +4,6 @@ import PrivateRoute from './auth/PrivateRoute';
 import LoginPage from './auth/Login';
 import HomePage from './HomePage';
 import Calculators from './Calculators'; 
-import CheckoutButton from './components/CheckoutButton'; 
 
 
 function App() {
