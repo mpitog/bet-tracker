@@ -65,7 +65,7 @@ class CreateCheckoutSessionView(APIView):
                 'quantity': 1,
             }],
             mode='payment',
-            success_url='http://localhost:3000/success',
-            cancel_url='http://localhost:3000/cancel',
+            success_url='http://localhost:3000/',
+            cancel_url='http://localhost:3000/',
         )
         return Response({'checkout_url': session.url})
