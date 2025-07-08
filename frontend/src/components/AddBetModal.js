@@ -14,7 +14,7 @@ const AddBetModal = ({
   STATUSES
 }) => {
 const requiredFields = [
-  'market_name', 'event_name', 'bet_name', 'stake', 'odds',
+  'market_name','bet_date', 'event_name', 'bet_name', 'stake', 'odds',
   'sportsbook', 'sport', 'league', 'bet_type', 'status'
 ];
 
@@ -43,6 +43,7 @@ if (!show) return null;
         <form style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }} onSubmit={e => e.preventDefault()}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {[
+              ['bet_date', 'Bet Date', 'date'],
               ['market_name', 'Market Name', 'text'],
               ['event_name', 'Event Name', 'text'],
               ['bet_name', 'Bet Name', 'text'],

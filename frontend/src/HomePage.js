@@ -34,7 +34,6 @@ function HomePage() {
     status: 'pending'
   });
 
-
   useEffect(() => {
     if (!accessToken) return;
 
@@ -165,6 +164,7 @@ const handleSave = () => {
             <thead>
               <tr>
                 <th className="thtd">Created</th>
+                <th className="thtd">Bet Date</th>
                 <th className="thtd">Sportsbook</th>
                 <th className="thtd">Market</th>
                 <th className="thtd">Event Name</th>
@@ -189,6 +189,7 @@ const handleSave = () => {
                   className="bet-row"
                 >
                   <td className="thtd">{bet.created_at ? new Date(bet.created_at).toLocaleDateString() : 'N/A'}</td>
+                  <td className="thtd">{bet.bet_date ? new Date(bet.bet_date).toLocaleDateString() : 'N/A'}</td>
                   <td className="thtd">{bet.sportsbook_display || 'N/A'}</td>
                   <td className="thtd">{bet.market_name || 'N/A'}</td>
                   <td className="thtd">{bet.event_name || 'N/A'}</td>
