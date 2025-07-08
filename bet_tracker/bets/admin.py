@@ -8,6 +8,7 @@ class BetAdmin(admin.ModelAdmin):
     list_display = (
         'user',
         'bet_type',
+        'bet_date',
         'sportsbook',
         'sport',
         'league',
