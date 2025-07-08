@@ -13,6 +13,7 @@ import Header from './components/Header';
 import './styles/main.css';
 import AddBetModal from './components/AddBetModal';
 import CheckoutButton from './components/CheckoutButton';
+import BetsSum from './components/BetsSum';  
 
 function HomePage() {
   const [bets, setBets] = useState([]);
@@ -145,7 +146,8 @@ const handleSave = () => {
       })
       .catch(err => console.error('Edit error:', err));
   };
-  
+
+
   return (
       <div>
         <Header />
@@ -338,6 +340,7 @@ const handleSave = () => {
         />
         {/* Checkout button */}
         <div style={{ marginTop: '2rem', textAlign: 'right' }}>
+         <BetsSum bets={bets} />
          <CheckoutButton />
         </div>
       </main>

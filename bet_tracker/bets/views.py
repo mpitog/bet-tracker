@@ -10,11 +10,26 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.conf import settings
 import stripe
+from rest_framework.decorators import api_view, permission_classes
+from django.db.models import Sum
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 User = get_user_model()
 
+#payout and profit summary view
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def bet_summary(request):
+    bets = Bet.objects.filter(user=request.user)
+    
+    total_payout = sum([bet.payout for bet in bets])
+    total_profit = sum([bet.profit for bet in bets])
+
+    return Response({
+        'total_payout': round(total_payout, 2),
+        'total_profit': round(total_profit, 2),
+    })
 
 def some_view(request):
     return HttpResponse("This is some_view!")

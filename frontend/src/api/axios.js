@@ -32,3 +32,11 @@ axiosInstance.interceptors.request.use(async (req) => {
 });
 
 export default axiosInstance;
+
+
+//get sums for bets
+
+export const fetchBetSummary = async () => {
+  const res = await axiosInstance.get('/api/summary/');
+  return res.data;
+};

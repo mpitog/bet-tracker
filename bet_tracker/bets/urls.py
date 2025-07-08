@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import (
 )
 from bets.views import CreateCheckoutSessionView
 from django.contrib import admin
+from .views import bet_summary
 
 router = DefaultRouter()
 router.register(r'bets', BetViewSet, basename='bet')
@@ -24,5 +25,5 @@ urlpatterns = [
     path('api/bets/<int:pk>/delete/', BetViewSet.as_view({'delete': 'destroy'}), name='bet-delete'),
     path('admin/', admin.site.urls),
     path('api/create-checkout-session/', CreateCheckoutSessionView.as_view(), name='create-checkout-session'),
-
+    path('summary/', bet_summary, name='bet-summary'),
 ]
