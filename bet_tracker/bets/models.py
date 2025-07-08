@@ -258,7 +258,7 @@ class Bet(models.Model):
     league = models.CharField(max_length=50, choices=LEAGUES)
     notes = models.TextField(blank=True)
     tags = models.CharField(max_length=255, blank=True)
-
+    bet_date= models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     @property

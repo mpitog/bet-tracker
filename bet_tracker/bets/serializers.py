@@ -5,6 +5,10 @@ from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
 
+from rest_framework import serializers
+from .models import Bet  # Adjust the import as needed
+
+
 class BetSerializer(serializers.ModelSerializer):
     status_display = serializers.SerializerMethodField()
     sportsbook_display = serializers.SerializerMethodField()
@@ -13,7 +17,7 @@ class BetSerializer(serializers.ModelSerializer):
     bet_type_display = serializers.SerializerMethodField()
     payout = serializers.SerializerMethodField()
     profit = serializers.SerializerMethodField()
-
+    bet_date = serializers.DateField(format="%Y-%m-%d")
 
     class Meta:
         model = Bet
@@ -25,22 +29,21 @@ class BetSerializer(serializers.ModelSerializer):
 
     def get_profit(self, obj):
         return obj.profit
-    
+
     def get_status_display(self, obj):
         return obj.get_status_display()
 
     def get_sportsbook_display(self, obj):
         return obj.get_sportsbook_display()
-    
+
     def get_league_display(self, obj):
         return obj.get_league_display()
-    
+
     def get_sport_display(self, obj):
         return obj.get_sport_display()
-    
+
     def get_bet_type_display(self, obj):
         return obj.get_bet_type_display()
-
 
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
